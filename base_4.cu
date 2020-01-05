@@ -137,6 +137,8 @@ __global__ void scanBlockKernel(uint32_t *in, int n, uint32_t *out,
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < n) {
     section[threadIdx.x] = in[i];
+  } else {
+    section[threadIdx.x] = 0;
   }
   __syncthreads();
 
@@ -301,6 +303,7 @@ __global__ void coutingSortWithHist(const uint32_t *in, int n, uint32_t *out,
 void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
                   int *blockSizes) {
   int nBins = 1 << nBits; // 2^nBits
+  printf("nBins %d\n", nBins);
 
   uint32_t *tempN = (uint32_t *)malloc(n * sizeof(uint32_t));
 
@@ -315,6 +318,7 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
   dim3 histogramGridSize((n - 1) / histogramBlockSize + 1);
 
   int histSize = histogramGridSize.x * nBins;
+  printf("histSize %d\n", histSize);
 
   uint32_t *hist = (uint32_t *)malloc(histSize * sizeof(uint32_t));
 
@@ -373,8 +377,8 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
   // 1 byte = 8 bits
   for (int bitBig = 0; bitBig < sizeof(uint32_t) * 8; bitBig += nBits) {
     // for (int bitBig = 0; bitBig < nBits; bitBig += nBits) {
-    CHECK(
-        cudaMemcpy(tempN, d_in, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+    // CHECK(
+    //     cudaMemcpy(tempN, d_in, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
     // printDebug(tempN, n, "d_in");
 
     // d_in -> d_hist
@@ -383,8 +387,8 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
         d_in, n, d_hist, nBins, bitBig);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(hist, d_hist, histSize * sizeof(uint32_t),
-                     cudaMemcpyDeviceToHost));
+    // CHECK(cudaMemcpy(hist, d_hist, histSize * sizeof(uint32_t),
+    //                  cudaMemcpyDeviceToHost));
     // printDebug(hist, histSize, "d_hist");
 
     // d_hist -> d_histScan
@@ -399,9 +403,11 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
     CHECK(cudaMemcpy(blockSums, d_blockSums,
                      scanHistogramGridSize.x * sizeof(uint32_t),
                      cudaMemcpyDeviceToHost));
+    // printDebug(blockSums, scanHistogramGridSize.x, "blockSums pre");
     for (int i = 1; i < scanHistogramGridSize.x; i += 1) {
       blockSums[i] += blockSums[i - 1];
     }
+    // printDebug(blockSums, scanHistogramGridSize.x, "blockSums after");
     CHECK(cudaMemcpy(d_blockSums, blockSums,
                      scanHistogramGridSize.x * sizeof(uint32_t),
                      cudaMemcpyHostToDevice));
@@ -411,8 +417,8 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
         d_histScan, histSize, d_blockSums);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(histScan, d_histScan, histSize * sizeof(uint32_t),
-                     cudaMemcpyDeviceToHost));
+    // CHECK(cudaMemcpy(histScan, d_histScan, histSize * sizeof(uint32_t),
+    //                  cudaMemcpyDeviceToHost));
     // printDebug(histScan, histSize, "d_histScan");
 
     // d_hist, d_histScan -> d_histScanExclusive
@@ -420,8 +426,8 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
         d_hist, histSize, d_histScan, d_histScanExclusive);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(histScanExclusive, d_histScanExclusive,
-                     histSize * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+    // CHECK(cudaMemcpy(histScanExclusive, d_histScanExclusive,
+    //                  histSize * sizeof(uint32_t), cudaMemcpyDeviceToHost));
     // printDebug(histScanExclusive, histSize, "d_histScanExclusive");
 
     // radix sort each block
@@ -433,8 +439,8 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
                                                        nBins, bitBig, bitSmall);
       CHECK(cudaDeviceSynchronize());
 
-      CHECK(cudaMemcpy(inBinary, d_inBinary, n * sizeof(uint32_t),
-                       cudaMemcpyDeviceToHost));
+      // CHECK(cudaMemcpy(inBinary, d_inBinary, n * sizeof(uint32_t),
+      //                  cudaMemcpyDeviceToHost));
       // printDebug(inBinary, n, "d_inBinary");
 
       // d_inBinary -> d_inBinaryScan
@@ -443,17 +449,17 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
           d_inBinary, n, d_inBinaryScan, NULL);
       CHECK(cudaDeviceSynchronize());
 
-      CHECK(cudaMemcpy(inBinaryScan, d_inBinaryScan, n * sizeof(uint32_t),
-                       cudaMemcpyDeviceToHost));
+      // CHECK(cudaMemcpy(inBinaryScan, d_inBinaryScan, n * sizeof(uint32_t),
+      //                  cudaMemcpyDeviceToHost));
       // printDebug(inBinaryScan, n, "d_inBinaryScan");
 
       // d_inBinaryScan -> d_inBinaryScanExclusive
-      inclusiveToExclusive<<<otherBlockSize, otherGridSize>>>(
+      inclusiveToExclusive<<<otherGridSize, otherBlockSize>>>(
           d_inBinary, n, d_inBinaryScan, d_inBinaryScanExclusive);
       CHECK(cudaDeviceSynchronize());
 
-      CHECK(cudaMemcpy(inBinaryScanExclusive, d_inBinaryScanExclusive,
-                       n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+      // CHECK(cudaMemcpy(inBinaryScanExclusive, d_inBinaryScanExclusive,
+      //                  n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
       // printDebug(inBinaryScanExclusive, n, "d_inBinaryScanExclusive");
 
       // d_inBinary, d_inBinaryScanExclusive -> d_nZerosPerBlock,
@@ -468,8 +474,8 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
                        cudaMemcpyDeviceToHost));
       // printDebug(nZerosPerBlock, n, "d_nZerosPerBlock");
 
-      CHECK(cudaMemcpy(inRankPerBlock, d_inRankPerBlock, n * sizeof(uint32_t),
-                       cudaMemcpyDeviceToHost));
+      // CHECK(cudaMemcpy(inRankPerBlock, d_inRankPerBlock, n * sizeof(uint32_t),
+      //                  cudaMemcpyDeviceToHost));
       // printDebug(inRankPerBlock, n, "d_inRankPerBlock");
 
       // d_in, d_inRankPerBlock -> d_out
@@ -487,16 +493,16 @@ void sortByDevice(const uint32_t *in, int n, uint32_t *out, int nBits,
         d_in, n, d_outWithEqual, nBins, bitBig);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(cudaMemcpy(outWithEqual, d_outWithEqual, n * sizeof(uint32_t),
-                     cudaMemcpyDeviceToHost));
+    // CHECK(cudaMemcpy(outWithEqual, d_outWithEqual, n * sizeof(uint32_t),
+    //                  cudaMemcpyDeviceToHost));
     // printDebug(outWithEqual, n, "d_outWithEqual");
 
     coutingSortWithHist<<<histogramGridSize, histogramBlockSize>>>(
         d_in, n, d_out, d_histScanExclusive, nBins, bitBig, d_outWithEqual);
     CHECK(cudaDeviceSynchronize());
 
-    CHECK(
-        cudaMemcpy(tempN, d_out, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+    // CHECK(
+    //     cudaMemcpy(tempN, d_out, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
     // printDebug(tempN, n, "d_out");
 
     uint32_t *temp = d_in;
@@ -564,7 +570,7 @@ int main(int argc, char **argv) {
 
   // SET UP INPUT SIZE
   int n = (1 << 24) + 1;
-  n = 1000000;
+  // n = 1000000;
   printf("\nInput size: %d\n", n);
 
   // ALLOCATE MEMORIES
