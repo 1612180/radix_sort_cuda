@@ -81,7 +81,6 @@ __global__ void calculateRankPerBlock41(uint32_t *inBinary, int n,
                                         uint32_t *inBinaryScan,
                                         uint32_t *nZerosPerBlock,
                                         uint32_t *inRankPerBlock) {
-  // calculate nZeros for each block
   int lastBlock = blockIdx.x * blockDim.x + blockDim.x - 1;
   int countBlock = blockDim.x;
 
@@ -106,7 +105,6 @@ __global__ void calculateRankPerBlock41(uint32_t *inBinary, int n,
   }
   __syncthreads();
 
-  // calculate rank with nZeros
   int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i < n) {
     if (inBinary[i] == 0) {
@@ -274,8 +272,8 @@ void sortBase41(uint32_t *in, int n, uint32_t *out, int nBits,
 
     for (int bitSmall = 0; bitSmall < nBits; bitSmall += 1) {
       // d_in -> d_inBinary
-      convertBinary41<<<otherGridSize, otherBlockSize>>>(d_in, n, d_inBinary,
-                                                       nBins, bitBig, bitSmall);
+      convertBinary41<<<otherGridSize, otherBlockSize>>>(
+          d_in, n, d_inBinary, nBins, bitBig, bitSmall);
       CHECK(cudaDeviceSynchronize());
 
       // d_inBinary -> d_inBinaryScan
