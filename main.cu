@@ -115,6 +115,18 @@ void timeSortBase42(uint32_t *in, int n, uint32_t *out, int nBits,
   printf("Time: %.3f ms\n", timer.Elapsed());
 }
 
+void timeSortBase43(uint32_t *in, int n, uint32_t *out, int nBits,
+                    int *blockSizes) {
+  GpuTimer timer;
+  timer.Start();
+
+  printf("\nRadix sort base 43\n");
+  sortBase43(in, n, out, nBits, blockSizes);
+
+  timer.Stop();
+  printf("Time: %.3f ms\n", timer.Elapsed());
+}
+
 int main(int argc, char **argv) {
   printDeviceInfo();
 
@@ -164,6 +176,9 @@ int main(int argc, char **argv) {
   compareThrust(out, n, thrustOut);
 
   timeSortBase42(in, n, out, nBits, blockSizes);
+  compareThrust(out, n, thrustOut);
+
+  timeSortBase43(in, n, out, nBits, blockSizes);
   compareThrust(out, n, thrustOut);
 
   free(in);
