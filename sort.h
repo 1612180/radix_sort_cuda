@@ -23,5 +23,6 @@ void sortBase1(uint32_t *in, int n, uint32_t *out, int nBits);
 void sortBase2(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes);
 void sortBase3(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes);
 void sortBase41(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes);
+void sortBase42(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes);
 
 #endif
