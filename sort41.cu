@@ -8,8 +8,8 @@
 // nBins - 1
 // hist: 2D array
 // convert to 1D array
-// (0 1 2 ... gridDim.x - 1)  (of 0) ... (0 1 2 ... gridDim.x - 1) (of nBins -
-// 1)
+// (0 1 2 ... gridDim.x - 1)  (of 0) ... (0 1 2 ... gridDim.x - 1) (of nBins -1)
+//
 __global__ void computeHist2DKernel41(uint32_t *in, int n, uint32_t *hist,
                                       int nBins, int bitBig) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -318,4 +318,18 @@ void sortBase41(uint32_t *in, int n, uint32_t *out, int nBits,
   }
 
   CHECK(cudaMemcpy(out, d_in, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+  free(tempN);
+  free(blockSums);
+
+  cudaFree(d_in);
+  cudaFree(d_out);
+  cudaFree(d_hist);
+  cudaFree(d_histScan);
+  cudaFree(d_blockSums);
+  cudaFree(d_histScanExclusive);
+  cudaFree(d_inBinary);
+  cudaFree(d_inBinaryScanExclusive);
+  cudaFree(d_inRankPerBlock);
+  cudaFree(d_nZerosPerBlock);
+  cudaFree(d_outWithEqual);
 }

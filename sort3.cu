@@ -140,4 +140,13 @@ void sortBase3(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes) {
     d_in = d_out;
     d_out = temp;
   }
+
+  free(blockSums);
+  free(inScanExclusive);
+  free(inBinary);
+
+  cudaFree(d_inScan);
+  cudaFree(d_blockSums);
+  cudaFree(d_inScanExclusive);
+  cudaFree(d_inBinary);
 }

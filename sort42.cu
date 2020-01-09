@@ -311,4 +311,16 @@ void sortBase42(uint32_t *in, int n, uint32_t *out, int nBits,
   }
 
   CHECK(cudaMemcpy(out, d_in, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+  free(tempN);
+  free(blockSums);
+  cudaFree(d_in);
+  cudaFree(d_out);
+  cudaFree(d_hist);
+  cudaFree(d_histScan);
+  cudaFree(d_blockSums);
+  cudaFree(d_histScanExclusive);
+  cudaFree(d_inBinary);
+  cudaFree(d_inBinaryScanExclusive);
+  cudaFree(d_inRankPerBlock);
+  cudaFree(d_outWithEqual);
 }
