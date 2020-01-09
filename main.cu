@@ -163,23 +163,29 @@ int main(int argc, char **argv) {
 
   timeSortThrust(in, n, thrustOut);
 
+  memset(out, 0, n * sizeof(uint32_t));
   timeSortBase1(in, n, out, nBits);
-  compareThrust(out, n, thrustOut);
+  compareArray(out, n, thrustOut);
 
+  memset(out, 0, n * sizeof(uint32_t));
   timeSortBase2(in, n, out, nBits, blockSizes);
-  compareThrust(out, n, thrustOut);
+  compareArray(out, n, thrustOut);
 
+  memset(out, 0, n * sizeof(uint32_t));
   timeSortBase3(in, n, out, nBits, blockSizes);
-  compareThrust(out, n, thrustOut);
+  compareArray(out, n, thrustOut);
 
+  memset(out, 0, n * sizeof(uint32_t));
   timeSortBase41(in, n, out, nBits, blockSizes);
-  compareThrust(out, n, thrustOut);
+  compareArray(out, n, thrustOut);
 
+  memset(out, 0, n * sizeof(uint32_t));
   timeSortBase42(in, n, out, nBits, blockSizes);
-  compareThrust(out, n, thrustOut);
+  compareArray(out, n, thrustOut);
 
+  memset(out, 0, n * sizeof(uint32_t));
   timeSortBase43(in, n, out, nBits, blockSizes);
-  compareThrust(out, n, thrustOut);
+  compareArray(out, n, thrustOut);
 
   free(in);
   free(out);

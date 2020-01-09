@@ -16,7 +16,7 @@
   }
 
 void printDebug(uint32_t *arr, int n, const char *debugMessage);
-void compareThrust(uint32_t *out, int n, uint32_t *thrustOut);
+void compareArray(uint32_t *arr1, int n, uint32_t *arr2);
 
 void sortThrust(uint32_t *in, int n, uint32_t *out);
 void sortBase1(uint32_t *in, int n, uint32_t *out, int nBits);

@@ -8,9 +8,9 @@ void printDebug(uint32_t *arr, int n, const char *debugMessage) {
   printf("\n");
 }
 
-void compareThrust(uint32_t *out, int n, uint32_t *thrustOut) {
+void compareArray(uint32_t *arr1, int n, uint32_t *arr2) {
   for (int i = 0; i < n; i++) {
-    if (out[i] != thrustOut[i]) {
+    if (arr1[i] != arr2[i]) {
       printf("INCORRECT :(\n");
       return;
     }

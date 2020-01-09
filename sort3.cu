@@ -100,7 +100,7 @@ void sortBase3(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes) {
     convertBinary3<<<otherGridSize, otherBlockSize>>>(d_in, n, d_inBinary, bit);
     CHECK(cudaDeviceSynchronize());
 
-    // d_inBinary -> d_inScan
+    // d_inBinary -> d_inScan, d_blockSums
     scanBlockKernel3<<<scanGridSize, scanBlockSize,
                        scanBlockSize * sizeof(uint32_t)>>>(
         d_inBinary, n, d_inScan, d_blockSums);
@@ -133,7 +133,7 @@ void sortBase3(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes) {
     int nZeros = n - inScanExclusive[n - 1] - inBinary[n - 1];
 
     countingSort3<<<otherGridSize, otherBlockSize>>>(d_in, n, d_out, d_inBinary,
-                                                    d_inScanExclusive, nZeros);
+                                                     d_inScanExclusive, nZeros);
     CHECK(cudaDeviceSynchronize());
 
     uint32_t *temp = d_in;
@@ -141,12 +141,16 @@ void sortBase3(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes) {
     d_out = temp;
   }
 
+  CHECK(cudaMemcpy(out, d_in, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+
   free(blockSums);
   free(inScanExclusive);
   free(inBinary);
 
-  cudaFree(d_inScan);
-  cudaFree(d_blockSums);
-  cudaFree(d_inScanExclusive);
-  cudaFree(d_inBinary);
+  CHECK(cudaFree(d_in));
+  CHECK(cudaFree(d_out));
+  CHECK(cudaFree(d_inScan));
+  CHECK(cudaFree(d_blockSums));
+  CHECK(cudaFree(d_inScanExclusive));
+  CHECK(cudaFree(d_inBinary));
 }

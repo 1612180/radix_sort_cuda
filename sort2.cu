@@ -156,12 +156,15 @@ void sortBase2(uint32_t *in, int n, uint32_t *out, int nBits, int *blockSizes) {
   }
 
   memcpy(out, tempIn, n * sizeof(uint32_t));
+
   free(tempIn);
   free(tempOut);
-  cudaFree(d_in);
-  cudaFree(d_hist);
-  cudaFree(d_hist);
-  cudaFree(d_histScan);
-  cudaFree(d_blockSums);
-  cudaFree(d_histScanExclusive);
+  free(blockSums);
+  free(histScanExclusive);
+
+  CHECK(cudaFree(d_in));
+  CHECK(cudaFree(d_hist));
+  CHECK(cudaFree(d_histScan));
+  CHECK(cudaFree(d_blockSums));
+  CHECK(cudaFree(d_histScanExclusive));
 }

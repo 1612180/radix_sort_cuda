@@ -243,7 +243,7 @@ void sortBase41(uint32_t *in, int n, uint32_t *out, int nBits,
         d_in, n, d_hist, nBins, bitBig);
     CHECK(cudaDeviceSynchronize());
 
-    // d_hist -> d_histScan
+    // d_hist -> d_histScan, d_blockSums
     scanBlockKernel41<<<scanHistogramGridSize, scanHistogramBlockSize,
                         scanHistogramBlockSize * sizeof(uint32_t)>>>(
         d_hist, histSize, d_histScan, d_blockSums);
@@ -318,18 +318,20 @@ void sortBase41(uint32_t *in, int n, uint32_t *out, int nBits,
   }
 
   CHECK(cudaMemcpy(out, d_in, n * sizeof(uint32_t), cudaMemcpyDeviceToHost));
+
   free(tempN);
   free(blockSums);
 
-  cudaFree(d_in);
-  cudaFree(d_out);
-  cudaFree(d_hist);
-  cudaFree(d_histScan);
-  cudaFree(d_blockSums);
-  cudaFree(d_histScanExclusive);
-  cudaFree(d_inBinary);
-  cudaFree(d_inBinaryScanExclusive);
-  cudaFree(d_inRankPerBlock);
-  cudaFree(d_nZerosPerBlock);
-  cudaFree(d_outWithEqual);
+  CHECK(cudaFree(d_in));
+  CHECK(cudaFree(d_out));
+  CHECK(cudaFree(d_hist));
+  CHECK(cudaFree(d_histScan));
+  CHECK(cudaFree(d_blockSums));
+  CHECK(cudaFree(d_histScanExclusive));
+  CHECK(cudaFree(d_inBinary));
+  CHECK(cudaFree(d_inBinaryScan));
+  CHECK(cudaFree(d_inBinaryScanExclusive));
+  CHECK(cudaFree(d_inRankPerBlock));
+  CHECK(cudaFree(d_nZerosPerBlock));
+  CHECK(cudaFree(d_outWithEqual));
 }
