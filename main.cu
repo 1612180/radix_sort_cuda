@@ -29,27 +29,11 @@ struct GpuTimer {
   }
 };
 
-void printDeviceInfo() {
-  cudaDeviceProp devProv;
-  CHECK(cudaGetDeviceProperties(&devProv, 0));
-  printf("**********GPU info**********\n");
-  printf("Name: %s\n", devProv.name);
-  printf("Compute capability: %d.%d\n", devProv.major, devProv.minor);
-  printf("Num SMs: %d\n", devProv.multiProcessorCount);
-  printf("Max num threads per SM: %d\n", devProv.maxThreadsPerMultiProcessor);
-  printf("Max num warps per SM: %d\n",
-         devProv.maxThreadsPerMultiProcessor / devProv.warpSize);
-  printf("GMEM: %zu byte\n", devProv.totalGlobalMem);
-  printf("SMEM per SM: %zu byte\n", devProv.sharedMemPerMultiprocessor);
-  printf("SMEM per block: %zu byte\n", devProv.sharedMemPerBlock);
-  printf("****************************\n");
-}
-
 void timeSortThrust(uint32_t *in, int n, uint32_t *out) {
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort thrust\n");
+  printf("Radix sort thrust\n");
   sortThrust(in, n, out);
 
   timer.Stop();
@@ -60,7 +44,7 @@ void timeSortBase1(uint32_t *in, int n, uint32_t *out, int nBits) {
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort base 1\n");
+  printf("Radix sort base 1\n");
   sortBase1(in, n, out, nBits);
 
   timer.Stop();
@@ -72,7 +56,7 @@ void timeSortBase2(uint32_t *in, int n, uint32_t *out, int nBits,
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort base 2\n");
+  printf("Radix sort base 2\n");
   sortBase2(in, n, out, nBits, blockSizes);
 
   timer.Stop();
@@ -84,8 +68,20 @@ void timeSortBase3(uint32_t *in, int n, uint32_t *out, int nBits,
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort base 3\n");
+  printf("Radix sort base 3\n");
   sortBase3(in, n, out, nBits, blockSizes);
+
+  timer.Stop();
+  printf("Time: %.3f ms\n", timer.Elapsed());
+}
+
+void timeSortBase4(uint32_t *in, int n, uint32_t *out, int nBits,
+                    int *blockSizes) {
+  GpuTimer timer;
+  timer.Start();
+
+  printf("Radix sort base 4\n");
+  sortBase4(in, n, out, nBits, blockSizes);
 
   timer.Stop();
   printf("Time: %.3f ms\n", timer.Elapsed());
@@ -96,7 +92,7 @@ void timeSortBase41(uint32_t *in, int n, uint32_t *out, int nBits,
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort base 41\n");
+  printf("Radix sort base 41\n");
   sortBase41(in, n, out, nBits, blockSizes);
 
   timer.Stop();
@@ -108,7 +104,7 @@ void timeSortBase42(uint32_t *in, int n, uint32_t *out, int nBits,
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort base 42\n");
+  printf("Radix sort base 42\n");
   sortBase42(in, n, out, nBits, blockSizes);
 
   timer.Stop();
@@ -120,7 +116,7 @@ void timeSortBase43(uint32_t *in, int n, uint32_t *out, int nBits,
   GpuTimer timer;
   timer.Start();
 
-  printf("\nRadix sort base 43\n");
+  printf("Radix sort base 43\n");
   sortBase43(in, n, out, nBits, blockSizes);
 
   timer.Stop();
@@ -128,11 +124,9 @@ void timeSortBase43(uint32_t *in, int n, uint32_t *out, int nBits,
 }
 
 int main(int argc, char **argv) {
-  printDeviceInfo();
-
   int n = (1 << 24) + 1;
   // n = 10;
-  printf("\nInput size: %d\n", n);
+  printf("Input size: %d\n", n);
 
   size_t bytes = n * sizeof(uint32_t);
   uint32_t *in = (uint32_t *)malloc(bytes);
@@ -152,7 +146,7 @@ int main(int argc, char **argv) {
   if (argc > 1) {
     nBits = atoi(argv[1]);
   }
-  printf("\nNum bits per digit: %d\n", nBits);
+  printf("Num bits per digit: %d\n", nBits);
 
   int blockSizes[3] = {512, 512, 512};
   if (argc == 5) {
@@ -161,7 +155,7 @@ int main(int argc, char **argv) {
     blockSizes[2] = atoi(argv[4]);
   }
   for (int i = 0; i < 3; i += 1) {
-    printf("\nBlocksize %d: %d\n", i, blockSizes[i]);
+    printf("Blocksize %d: %d\n", i, blockSizes[i]);
   }
 
   memcpy(tempIn, in, n * sizeof(uint32_t));
@@ -180,6 +174,11 @@ int main(int argc, char **argv) {
   memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
   timeSortBase3(tempIn, n, out, nBits, blockSizes);
+  compareArray(out, n, thrustOut);
+
+  memcpy(tempIn, in, n * sizeof(uint32_t));
+  memset(out, 0, n * sizeof(uint32_t));
+  timeSortBase4(tempIn, n, out, nBits, blockSizes);
   compareArray(out, n, thrustOut);
 
   memcpy(tempIn, in, n * sizeof(uint32_t));

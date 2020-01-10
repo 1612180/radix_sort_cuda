@@ -1,1 +1,1 @@
-nvcc main.cu debug.cu thrust.cu sort1.cu sort2.cu sort3.cu sort41.cu sort42.cu sort43.cu
+nvcc main.cu debug.cu thrust.cu sort1.cu sort2.cu sort3.cu sort4.cu sort41.cu sort42.cu sort43.cu
