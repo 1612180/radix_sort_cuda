@@ -138,6 +138,9 @@ int main(int argc, char **argv) {
   uint32_t *in = (uint32_t *)malloc(bytes);
   uint32_t *out = (uint32_t *)malloc(bytes);
 
+  // ensure in array not change
+  uint32_t *tempIn = (uint32_t *)malloc(bytes);
+
   // Use thrust for compare
   uint32_t *thrustOut = (uint32_t *)malloc(bytes);
 
@@ -161,30 +164,37 @@ int main(int argc, char **argv) {
     printf("\nBlocksize %d: %d\n", i, blockSizes[i]);
   }
 
-  timeSortThrust(in, n, thrustOut);
+  memcpy(tempIn, in, n * sizeof(uint32_t));
+  timeSortThrust(tempIn, n, thrustOut);
 
+  memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
-  timeSortBase1(in, n, out, nBits);
+  timeSortBase1(tempIn, n, out, nBits);
   compareArray(out, n, thrustOut);
 
+  memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
-  timeSortBase2(in, n, out, nBits, blockSizes);
+  timeSortBase2(tempIn, n, out, nBits, blockSizes);
   compareArray(out, n, thrustOut);
 
+  memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
-  timeSortBase3(in, n, out, nBits, blockSizes);
+  timeSortBase3(tempIn, n, out, nBits, blockSizes);
   compareArray(out, n, thrustOut);
 
+  memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
-  timeSortBase41(in, n, out, nBits, blockSizes);
+  timeSortBase41(tempIn, n, out, nBits, blockSizes);
   compareArray(out, n, thrustOut);
 
+  memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
-  timeSortBase42(in, n, out, nBits, blockSizes);
+  timeSortBase42(tempIn, n, out, nBits, blockSizes);
   compareArray(out, n, thrustOut);
 
+  memcpy(tempIn, in, n * sizeof(uint32_t));
   memset(out, 0, n * sizeof(uint32_t));
-  timeSortBase43(in, n, out, nBits, blockSizes);
+  timeSortBase43(tempIn, n, out, nBits, blockSizes);
   compareArray(out, n, thrustOut);
 
   free(in);
